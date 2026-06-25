@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Horizon Immobilier — Assistant IA</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .phone-frame {
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      height: 88vh;
+      max-height: 720px;
+    }
+
+    /* Header */
+    .header {
+      background: #075e54;
+      color: white;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #25d366;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .header-info h1 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .header-info p {
+      font-size: 12px;
+      opacity: 0.85;
+    }
+
+    .powered-badge {
+      margin-left: auto;
+      background: rgba(255,255,255,0.15);
+      padding: 4px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    /* Chat area */
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      background: #ece5dd;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .chat::-webkit-scrollbar { width: 4px; }
+    .chat::-webkit-scrollbar-track { background: transparent; }
+    .chat::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 2px; }
+
+    .bubble {
+      max-width: 78%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.45;
+      position: relative;
+      word-wrap: break-word;
+    }
+
+    .bubble.bot {
+      background: #fff;
+      align-self: flex-start;
+      border-top-left-radius: 2px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .bubble.user {
+      background: #dcf8c6;
+      align-self: flex-end;
+      border-top-right-radius: 2px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .bubble .time {
+      font-size: 10px;
+      color: #999;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .typing {
+      display: none;
+      background: #fff;
+      align-self: flex-start;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border-top-left-radius: 2px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .typing span {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #999;
+      border-radius: 50%;
+      margin: 0 2px;
+      animation: bounce 1.2s infinite;
+    }
+
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-6px); }
+    }
+
+    /* Input area */
+    .input-area {
+      background: #f0f0f0;
+      padding: 10px 12px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    textarea {
+      flex: 1;
+      background: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-family: inherit;
+      resize: none;
+      outline: none;
+      max-height: 100px;
+      overflow-y: auto;
+      line-height: 1.4;
+    }
+
+    .send-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #075e54;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+
+    .send-btn:hover { background: #064e47; }
+    .send-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+    .send-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: white;
+    }
+
+    /* Suggestions */
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 0 0 6px 0;
+    }
+
+    .suggestion-chip {
+      background: #fff;
+      border: 1px solid #25d366;
+      color: #075e54;
+      border-radius: 14px;
+      padding: 5px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .suggestion-chip:hover {
+      background: #25d366;
+      color: white;
+    }
+
+    /* Watermark */
+    .watermark {
+      text-align: center;
+      padding: 6px;
+      font-size: 11px;
+      color: #aaa;
+      background: #f0f0f0;
+      flex-shrink: 0;
+    }
+
+    .watermark a {
+      color: #075e54;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <!-- Header -->
+  <div class="header">
+    <div class="avatar">🏠</div>
+    <div class="header-info">
+      <h1>Horizon Immobilier</h1>
+      <p>🟢 Agent IA disponible 24h/24</p>
+    </div>
+    <div class="powered-badge">⚡ Amazonia</div>
+  </div>
+
+  <!-- Chat -->
+  <div class="chat" id="chat">
+    <div class="bubble bot">
+      Bonjour ! Je suis l'assistant d'<strong>Horizon Immobilier</strong>. Je connais tous nos biens en Guyane et aux Antilles. Comment puis-je vous aider ? 😊
+      <div class="time" id="init-time"></div>
+    </div>
+
+    <div class="suggestions" id="suggestions">
+      <span class="suggestion-chip" onclick="sendSuggestion(this)">Appartements à Cayenne</span>
+      <span class="suggestion-chip" onclick="sendSuggestion(this)">Maisons à vendre</span>
+      <span class="suggestion-chip" onclick="sendSuggestion(this)">Budget 200 000 €</span>
+      <span class="suggestion-chip" onclick="sendSuggestion(this)">Le bien le moins cher</span>
+    </div>
+
+    <div class="typing" id="typing">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="input-area">
+    <textarea
+      id="input"
+      placeholder="Écrivez un message..."
+      rows="1"
+      onkeydown="handleKey(event)"
+      oninput="autoResize(this)"
+    ></textarea>
+    <button class="send-btn" id="send-btn" onclick="send()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+
+  <div class="watermark">Propulsé par <a href="#">Amazonia</a> — Conseil en agents IA</div>
+</div>
+
+<script>
+  const chat = document.getElementById('chat');
+  const input = document.getElementById('input');
+  const sendBtn = document.getElementById('send-btn');
+  const typing = document.getElementById('typing');
+  const suggestions = document.getElementById('suggestions');
+
+  // Set initial time
+  document.getElementById('init-time').textContent = getTime();
+
+  let messages = [];
+
+  function getTime() {
+    return new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  }
+
+  function sendSuggestion(chip) {
+    input.value = chip.textContent;
+    suggestions.remove();
+    send();
+  }
+
+  function addBubble(text, role) {
+    const bubble = document.createElement('div');
+    bubble.className = `bubble ${role}`;
+    bubble.innerHTML = text.replace(/\n/g, '<br>') + `<div class="time">${getTime()}</div>`;
+    chat.insertBefore(bubble, typing);
+    chat.scrollTop = chat.scrollHeight;
+    return bubble;
+  }
+
+  async function send() {
+    const text = input.value.trim();
+    if (!text || sendBtn.disabled) return;
+
+    // Remove suggestions if still visible
+    if (suggestions.parentNode) suggestions.remove();
+
+    input.value = '';
+    input.style.height = 'auto';
+    sendBtn.disabled = true;
+
+    addBubble(text, 'user');
+    messages.push({ role: 'user', content: text });
+
+    // Show typing
+    typing.style.display = 'flex';
+    chat.scrollTop = chat.scrollHeight;
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages }),
+      });
+
+      const data = await res.json();
+      typing.style.display = 'none';
+
+      if (data.reply) {
+        addBubble(data.reply, 'bot');
+        messages.push({ role: 'assistant', content: data.reply });
+      } else {
+        addBubble("Une erreur s'est produite. Veuillez réessayer.", 'bot');
+      }
+    } catch (err) {
+      typing.style.display = 'none';
+      addBubble("Connexion impossible. Veuillez réessayer.", 'bot');
+    }
+
+    sendBtn.disabled = false;
+    input.focus();
+  }
+</script>
+</body>
+</html>
